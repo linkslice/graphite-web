@@ -6,6 +6,7 @@ Graphite Documentation
    :maxdepth: 1
 
    overview
+   faq
    install
    carbon-daemons
    config-carbon
@@ -19,7 +20,9 @@ Graphite Documentation
    functions
    dashboard
    whisper
+   ceres
    storage-backends
+   events
    terminology
    tools
    development

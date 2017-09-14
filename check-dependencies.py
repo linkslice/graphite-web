@@ -5,9 +5,9 @@ import sys
 # Simple python version test
 major,minor = sys.version_info[:2]
 py_version = sys.version.split()[0]
-if major != 2 or minor < 5:
+if major != 2 or minor < 7:
   # SystemExit defaults to returning 1 when printing a string to stderr
-  raise SystemExit("You are using python %s, but version 2.5 or greater is required" % py_version)
+  raise SystemExit("You are using python %s, but version 2.7 or greater is required" % py_version)
 
 required = 0
 optional = 0
@@ -28,12 +28,13 @@ except ImportError:
     required += 1
 
 
-# Test for pycairo or cairocffi
+# Test for cairocffi or pycairo
 try:
-  import cairo
+  import cairocffi as cairo
 except ImportError:
+  sys.stderr.write("[REQUIRED] Unable to import the 'cairocffi' module, attempting to fall back to pycairo\n")
   try:
-    import cairocffi as cairo
+    import cairo
   except ImportError:
     sys.stderr.write("[REQUIRED] Unable to import the 'cairo' module, do you have pycairo installed for python %s?\n" % py_version)
     cairo = None
@@ -48,6 +49,7 @@ try:
 except Exception:
   sys.stderr.write("[REQUIRED] Failed to create an ImageSurface with cairo, you probably need to recompile cairo with PNG support\n")
   required += 1
+
 
 # Test that cairo can find fonts
 try:
@@ -93,8 +95,8 @@ except ImportError:
   required += 1
 
 
-if django and django.VERSION[:2] < (1,4):
-  sys.stderr.write("[REQUIRED] You have django version %s installed, but version 1.4 or greater is required\n" % django.get_version())
+if django and django.VERSION[:2] < (1,8):
+  sys.stderr.write("[REQUIRED] You have django version %s installed, but version 1.8 or greater is required\n" % django.get_version())
   required += 1
 
 
@@ -107,14 +109,6 @@ except ImportError:
   except ImportError:
     sys.stderr.write("[REQUIRED] Unable to import either the 'json' or 'simplejson' module, at least one is required.\n")
     required += 1
-
-
-# Test for zope.interface
-try:
-  from zope.interface import Interface
-except ImportError:
-  sys.stderr.write("[OPTIONAL] Unable to import Interface from zope.interface. Without it, you will be unable to run carbon on this server.\n")
-  optional +=1
 
 
 # Test for python-memcached
@@ -133,20 +127,6 @@ except ImportError:
   optional += 1
 
 
-# Test for Twisted python
-try:
-  import twisted
-except ImportError:
-  sys.stderr.write("[OPTIONAL] Unable to import the 'twisted' package, do you have Twisted installed for python %s? Without Twisted, you cannot run carbon on this server.\n" % py_version)
-  optional += 1
-else:
-  tv = []
-  tv = twisted.__version__.split('.')
-  if int(tv[0]) < 8 or (int(tv[0]) == 8 and int(tv[1]) < 2):
-    print "[OPTIONAL] Your version of Twisted is too old to run carbon. You will not be able to run carbon on this server until you upgrade Twisted >= 8.2.\n"
-    optional += 1
-
-
 # Test for txamqp
 try:
   import txamqp
@@ -161,6 +141,22 @@ try:
 except ImportError:
   sys.stderr.write("[OPTIONAL] Unable to import the 'python-rrdtool' module, this is required for reading RRD.\n")
   optional += 1
+
+
+# Test for whitenoise
+try:
+    import whitenoise
+except ImportError:
+    sys.stderr.write("[OPTIONAL] Unable to import the 'whitenoise' module. This is useful for serving static files.\n")
+    optional += 1
+
+
+# Test for pyhash
+try:
+    import pyhash
+except ImportError:
+    sys.stderr.write("[OPTIONAL] Unable to import the 'pyhash' module. This is useful for fnv1_ch hashing support.\n")
+    optional += 1
 
 
 if optional:

@@ -5,7 +5,7 @@ Graphite-web accepts contributions on `GitHub
 <https://github.com/graphite-project/graphite-web>`_, in the form of issues or
 pull requests. If you're comfortable with Python, here is how to get started.
 
-First, keep in mind that Graphite-web supports Python versions **2.5 to 2.7**
+First, keep in mind that Graphite-web supports Python versions **2.6 to 2.7**
 and Django versions **1.4 and above**.
 
 Setting up a development environment
@@ -16,7 +16,7 @@ isolate projects between each other. This document uses virtualenv as the
 lowest common denominator.
 
 .. _virtualenv: http://www.virtualenv.org/
-.. _virtualenvwrapper: http://virtualenvwrapper.readthedocs.org/
+.. _virtualenvwrapper: http://virtualenvwrapper.readthedocs.io/
 
 Create a virtualenv at the root of your graphite-web repository::
 
@@ -47,7 +47,7 @@ To run the tests for the Python and Django versions of your virtualenv::
 If you want to run the tests for all combinations of Python and Django
 versions, you can use the `tox`_ tool.
 
-.. _tox: http://tox.readthedocs.org/
+.. _tox: http://tox.readthedocs.io/
 
 ::
 

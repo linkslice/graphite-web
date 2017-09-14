@@ -1,18 +1,19 @@
-from pyparsing import *
+from pyparsing import (
+    Forward, Combine, Optional, Word, Literal, CaselessKeyword,
+    CaselessLiteral, Group, FollowedBy, LineEnd, OneOrMore, ZeroOrMore,
+    alphas, alphanums, printables, delimitedList, quotedString, Regex,
+    __version__,
+)
 
-ParserElement.enablePackrat()
 grammar = Forward()
 
 expression = Forward()
 
 # Literals
-intNumber = Combine(
-  Optional('-') + Word(nums)
-)('integer')
 
-floatNumber = Combine(
-  Optional('-') + Word(nums) + Literal('.') + Word(nums)
-)('float')
+intNumber = Regex(r'-?\d+')('integer')
+
+floatNumber = Regex(r'-?\d+\.\d+')('float')
 
 sciNumber = Combine(
   (floatNumber | intNumber) + CaselessLiteral('e') + intNumber
@@ -53,7 +54,7 @@ comma = Literal(',').suppress()
 equal = Literal('=').suppress()
 backslash = Literal('\\').suppress()
 
-symbols = '''(){},=.'"\\'''
+symbols = '''(){},.'"\\'''
 arg = Group(
   boolean |
   number |
@@ -76,7 +77,7 @@ call = Group(
 
 # Metric pattern (aka. pathExpression)
 validMetricChars = ''.join((set(printables) - set(symbols)))
-escapedChar = backslash + Word(symbols, exact=1)
+escapedChar = backslash + Word(symbols + '=', exact=1)
 partialPathElem = Combine(
   OneOrMore(
     escapedChar | Word(validMetricChars)
@@ -95,8 +96,26 @@ pathElement = Combine(
 )
 pathExpression = delimitedList(pathElement, delim='.', combine=True)('pathExpression')
 
-expression << Group(call | pathExpression)('expression')
-grammar << expression
+litarg = Group(
+  number | aString
+)('args*')
+litkwarg = Group(argname + equal + litarg)('kwargs*')
+litargs = delimitedList(~litkwarg + litarg)  # lookahead to prevent failing on equals
+litkwargs = delimitedList(litkwarg)
+
+template = Group(
+  Literal('template') + leftParen +
+  (call | pathExpression) +
+  Optional(comma + (litargs | litkwargs)) +
+  rightParen
+)('template')
+
+if __version__.startswith('1.'):
+    expression << Group(template | call | pathExpression)('expression')
+    grammar << expression
+else:
+    expression <<= Group(template | call | pathExpression)('expression')
+    grammar <<= expression
 
 
 def enableDebug():
